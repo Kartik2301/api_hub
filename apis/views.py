@@ -5,6 +5,8 @@ env = environ.Env()
 environ.Env.read_env()
 import pyrebase
 from django.views.decorators.csrf import csrf_exempt
+import slack
+import threading
 
 config = {
         "apiKey": env('API_KEY'),
@@ -41,4 +43,8 @@ def send_email(req):
     full_name = req.POST['full_name']
     email = req.POST['email']
     print(message, email, full_name)
-    return HttpResponse(f"{message} {full_name} {email}")
+
+    client = slack.WebClient(token=env('SLACK_TOKEN'))
+    client.chat_postMessage(channel="#testing", text=f"{full_name} - {email} -- {message}")
+
+    return HttpResponse('Message Sent')
