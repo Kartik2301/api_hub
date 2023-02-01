@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http.response import HttpResponse
+from django.http.response import HttpResponse, JsonResponse
 import environ
 env = environ.Env()
 environ.Env.read_env()
@@ -7,6 +7,7 @@ import pyrebase
 from django.views.decorators.csrf import csrf_exempt
 import slack
 import threading
+import json
 
 config = {
         "apiKey": env('API_KEY'),
@@ -33,9 +34,14 @@ def fetch_blogs(req):
 
     for key in blog_content:
         blog_item = database.child('blogs').child(key).get().val()
-        blogs.append([key, blog_item['title'], blog_item['date_time']])
+        blogs.append(
+            {'key': key,
+             'title' : blog_item['title'],
+             'date_time': blog_item['date_time'],
+             'description': blog_item['description']
+            })
 
-    return HttpResponse(blogs)
+    return JsonResponse(blogs, safe=False)
 
 @csrf_exempt
 def send_email(req):
